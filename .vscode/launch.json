@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "defalut",
+            "type": "python",
+            "request": "launch",
+            "args": [],
+            "program": "${workspaceFolder}/main.py/",
+            "console": "integratedTerminal",
+            "env": { "PYTHONPATH": "${workspaceRoot}"}
+        },
+        {
+            "name": "catalog_server",
+            "type": "python",
+            "request": "launch",
+            "args": [],
+            "program": "${workspaceFolder}/services/catalog/catalog_service.py",
+            "console": "integratedTerminal",
+            "env": { "PYTHONPATH": "${workspaceRoot}"}
+        },
+    ]
+}
