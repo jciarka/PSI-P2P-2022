@@ -34,18 +34,23 @@ def get_remote_resources(client, resources: Resources):
 
 class Ls():
     def __init__(self, args) -> None:
-        parser = self.__getParser()
+        parser = Ls.__getParser()
         try:
             self.args = parser.parse_args(args)
         except SystemExit:
             raise InvalidCommandError()
 
-    def __getParser(self):
+    @staticmethod
+    def __getParser():
         parser = argparse.ArgumentParser(
-            "Command ls")
+            "Command LS", description="addes or updates resource")
 
         parser.add_argument("-l", "--local", action='store_true')
         return parser
+
+    @staticmethod
+    def print_usage():
+        return Ls.__getParser().print_help()
 
     def execute(self, client, resources=Resources(),
                 resource_path=DEFAULT_RESOURCE_PATH):

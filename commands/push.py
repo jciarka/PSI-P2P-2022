@@ -4,16 +4,17 @@ from commands.errors import InvalidCommandError
 
 class Push:
     def __init__(self, args) -> None:
-        parser = self.__getParser()
+        parser = Push.__getParser()
 
         try:
             self.args = parser.parse_args(args)
         except SystemExit:
             raise InvalidCommandError()
 
-    def __getParser(self):
+    @staticmethod
+    def __getParser():
         parser = argparse.ArgumentParser(
-            "Command ls")
+            "Command PUSH", description="addes or updates resource")
 
         parser.add_argument(
             "-r", "--resource", nargs='*', type=str, required=True)
@@ -21,6 +22,10 @@ class Push:
             "-d", "--directory", type=list, required=True)
 
         return parser
+
+    @staticmethod
+    def print_usage():
+        return Push.__getParser().print_help()
 
     def execute(self, client):
         raise NotImplementedError()

@@ -2,7 +2,14 @@ from commands.ls import Ls
 from commands.fetch import Fetch
 from commands.push import Push
 from commands.rm import Rm
+from commands.exit import Exit
+from commands.help import Help
 from commands.errors import InvalidCommandError
+
+
+registered_commands = [
+    Ls, Fetch, Push, Rm, Exit, Help,
+]
 
 
 class CommandsFactory:
@@ -24,5 +31,11 @@ class CommandsFactory:
 
         if command == Rm.__name__.lower():
             return Rm(args)
+
+        if command == Help.__name__.lower():
+            return Help(registered_commands, args)
+
+        if command == Exit.__name__.lower():
+            return Exit(args)
 
         return None

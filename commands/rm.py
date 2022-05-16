@@ -4,21 +4,26 @@ from commands.errors import InvalidCommandError
 
 class Rm:
     def __init__(self, args) -> None:
-        parser = self.__getParser()
+        parser = Rm.__getParser()
 
         try:
             self.args = parser.parse_args(args)
         except SystemExit:
             raise InvalidCommandError()
 
-    def __getParser(self):
+    @staticmethod
+    def __getParser():
         parser = argparse.ArgumentParser(
-            "Command rm")
+            "Command RM", description="removes resource")
 
         parser.add_argument(
             "-s", "--resource", nargs='*', type=str, required=True)
 
         return parser
+
+    @staticmethod
+    def print_usage():
+        return Rm.__getParser().print_help()
 
     def execute(self, client):
         raise NotImplementedError()

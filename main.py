@@ -4,7 +4,7 @@ from client.client import Client
 from services.catalog.catalog_service import CatalogService
 import threading
 from client.resources import Resources
-from commands.errors import InvalidCommandError
+from commands.errors import InvalidCommandError, ShutDownSystemError
 
 parser = argparse.ArgumentParser(
     "The program reads the text form file and converts in using" +
@@ -45,4 +45,13 @@ while True:
               " Use help to check the wright syntax.")
         continue
 
-    handler.execute(client, resources)
+    try:
+        handler.execute(client, resources)
+    except ShutDownSystemError:
+        break
+
+catalog_server.cancelation_token = True
+print("Turning of services...")
+
+catalog_server_thread.join()
+print("Goodbye")
