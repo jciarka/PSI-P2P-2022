@@ -3,6 +3,8 @@ from commands.commands_factory import CommandsFactory
 from client.client import Client
 from services.catalog.catalog_service import CatalogService
 import threading
+from client.resources import Resources
+from commands.errors import InvalidCommandError
 
 parser = argparse.ArgumentParser(
     "The program reads the text form file and converts in using" +
@@ -24,17 +26,23 @@ parser.add_argument("-d", "--delay",
 args = parser.parse_args()
 
 client = Client(args.delay, args.expiration)
-# catalog_server = CatalogService()
-# catalog_server_thread = threading.Thread(target=catalog_server.run())
-# catalog_server_thread.start()
+catalog_server = CatalogService()
+catalog_server_thread = threading.Thread(target=catalog_server.run)
+catalog_server_thread.start()
+
+resources = Resources()
 
 while True:
     command = input("?:")
-    handler = CommandsFactory.resolve(command)
+
+    try:
+        handler = CommandsFactory.resolve(command)
+    except InvalidCommandError:
+        continue
 
     if handler is None:
         print(f"Command '{command}' not found." +
               " Use help to check the wright syntax.")
         continue
 
-    handler.execute(client)
+    handler.execute(client, resources)

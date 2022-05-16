@@ -102,7 +102,7 @@ class Client:
         if data is None:
             raise InvalidBodyError(address)
 
-        return address, data
+        return address[0], data
 
     def __get_resources_info_process_response_body(self, body):
         serializer = InjectionContainer["serializer"]
