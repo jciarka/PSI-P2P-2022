@@ -53,7 +53,8 @@ class CatalogService:
 
                 except StatusCodeException as ex:
                     response = CatalogMessagesUtil.generate_response(
-                        VERSION, 0, ex.GetStatusCode().value, group_id, msg_id)
+                        VERSION, 0, ex.GetStatusCode().value,
+                        ex.get_group_id, ex.get_message_id)
                     s.sendto(response, address)
                     continue
 

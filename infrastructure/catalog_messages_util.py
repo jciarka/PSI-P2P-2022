@@ -58,28 +58,28 @@ class CatalogMessagesUtil:
         version_flags, type_status, group_id = \
             struct.unpack('!BBH', header[0:4])
 
+        msg_id, body_length = \
+            struct.unpack('!HH', header[4:8])
+
         version = version_flags >> 4
         flags = version_flags & 0b1111
 
         # validate version
         if checkVersion is not None and version != checkVersion:
-            raise VersionNotSupported()
+            raise VersionNotSupported(checkGroupId, msg_id)
 
-        msg_id, body_length = \
-            struct.unpack('!HH', header[4:8])
-
-        if checkGroupId is not None and checkGroupId != group_id:
-            raise OtherGroupIdError()
+        if checkGroupId is not None and group_id != group_id:
+            raise OtherGroupIdError(checkGroupId, msg_id)
 
         if checkMsgId is not None and checkMsgId != msg_id:
-            raise ExpiredRequestMessageError()
+            raise ExpiredRequestMessageError(group_id, msg_id)
 
         body = msg[8:-4]
         if body_length != len(body):
-            raise InvalidBodyError()
+            raise InvalidBodyError(group_id, msg_id)
 
         if struct.unpack('!L', crc)[0] != crc32(header+body):
-            raise CrcCheckFailedError()
+            raise CrcCheckFailedError(group_id, msg_id)
 
         return version, flags, type_status, group_id, msg_id, body_length
 
