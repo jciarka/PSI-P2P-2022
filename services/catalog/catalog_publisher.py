@@ -1,16 +1,16 @@
 import socket
-import struct
-from zlib import crc32
 from time import sleep
 from infrastructure.local_resources_util import LocalResourcesUtil
 from config import \
-    VERSION,\
     InjectionContainer,\
     CATALOG_SERVICE_PORT,\
     CATALOG_PUBLISHER_AWAKE_PERIOD,\
     CATALOG_PUBLISHER_SEND_PERIOD,\
     DEFAULT_RESOURCE_PATH,\
+    RESOURCE_GROUP_ID,\
     CATALOG_MESSAGES_TYPES
+
+from infrastructure.catalog_messages_util import CatalogMessagesUtil
 
 
 class CatalogPublisher:
@@ -27,15 +27,20 @@ class CatalogPublisher:
         return self.__resource_path
 
     def __init__(self,
+                 version,
                  resource_path=DEFAULT_RESOURCE_PATH,
+                 group_id=RESOURCE_GROUP_ID,
                  awake_period=CATALOG_PUBLISHER_AWAKE_PERIOD,
-                 send_period=CATALOG_PUBLISHER_SEND_PERIOD) -> None:
+                 send_period=CATALOG_PUBLISHER_SEND_PERIOD,
+                 ) -> None:
 
         self.cancelation_token = False
+        self.__version = version
         self.__resource_path = resource_path
         self.__awake_period = awake_period
         self.__send_period = send_period
         self.__serialzier = InjectionContainer["serializer"]
+        self.__group_id = group_id
         self.__wait = 0
 
     def run(self):
@@ -49,18 +54,15 @@ class CatalogPublisher:
 
                 resources = LocalResourcesUtil.get(self.__resource_path)
                 body = self.__serialzier.serialze(resources)
-                msg = self.__generate_message(body)
-                s.sendto(msg, ('255.255.255.255', CATALOG_SERVICE_PORT))
-
-    def __generate_message(self, body):
-        rows = []
-        rows.append(struct.pack('!BBH',
-                    (VERSION << 4) + (1 << 3),
+                msg = CatalogMessagesUtil.generate_request(
+                    self.__version,
+                    0,
                     CATALOG_MESSAGES_TYPES.BROADCAST_ALL_FILES.value,
-                    len(body)))
-        rows.append(struct.pack(f'!{len(body)}s', body))
-        rows.append(struct.pack('!L', crc32(b''.join(rows))))
-        return b''.join(rows)
+                    self.__group_id,
+                    0,
+                    body
+                )
+                s.sendto(msg, ('255.255.255.255', CATALOG_SERVICE_PORT))
 
     def __process_should_send_now_or_delay(self):
         if self.__wait > 0:

@@ -1,18 +1,24 @@
 from os import listdir
 from os.path import isfile, join, getmtime
 
+from infrastructure.local_resources_util import LocalResourcesUtil
 from config import InjectionContainer
+from client.resource import Resource
 
 
-class GetResourceInfoAction:
+class UpdateResourcesAction:
     def __init__(self) -> None:
         pass
 
-    def execute(self, request, resource_path):
-        resources = self.__list_resources(resource_path)
-
+    def execute(self, address, body, resources, resource_path):
         serializer = InjectionContainer["serializer"]
-        return serializer.serialze(resources)
+        items = serializer.deserialzie(body)
+
+        resources.remove(address)
+        for item in items:
+            resource = Resource(item['name'])
+            resource.append(address, item["modified"])
+            resources.append(resource)
 
     def __list_resources(self, resource_path):
         resources = [{"name": file,
@@ -21,3 +27,14 @@ class GetResourceInfoAction:
                      if isfile(join(resource_path, file))]
 
         return resources
+
+
+class GetResourceInfoAction:
+    def __init__(self) -> None:
+        pass
+
+    def execute(self, address, body, resources, resource_path):
+        resources = LocalResourcesUtil.get(resource_path)
+
+        serializer = InjectionContainer["serializer"]
+        return serializer.serialze(resources)

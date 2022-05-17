@@ -32,6 +32,12 @@ def get_remote_resources(client, resources: Resources):
             resources.append(resource)
 
 
+def get_all_resources(client, path, resources: Resources):
+    resources.clear()
+    get_local_resources(path, resources)
+    get_remote_resources(client, resources)
+
+
 class Ls():
     def __init__(self, args) -> None:
         parser = Ls.__getParser()
@@ -45,7 +51,11 @@ class Ls():
         parser = argparse.ArgumentParser(
             "Command LS", description="lists resources")
 
-        parser.add_argument("-l", "--local", action='store_true')
+        parser.add_argument("-l", "--local", action='store_true',
+                            help='shows only local')
+        parser.add_argument("-r", "--refresh", action='store_true',
+                            help='forces refresh info from remote hosts')
+
         return parser
 
     @staticmethod
@@ -55,11 +65,14 @@ class Ls():
     def execute(self, client, resources=Resources(),
                 resource_path=DEFAULT_RESOURCE_PATH):
 
-        resources.clear()
-
-        # get_local_resources(resource_path, resources)
-        if not self.args.local:
+        if self.args.refresh:
+            resources.clear()
+            get_local_resources(resource_path, resources)
             get_remote_resources(client, resources)
 
-        print(resources)
-        return resources
+        if self.args.local:
+            local = Resources()
+            get_local_resources(resource_path, local)
+            print(local)
+        else:
+            print(resources)

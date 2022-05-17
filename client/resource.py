@@ -61,5 +61,14 @@ class Resource():
     def append(self, address, timestamp):
         self.__timed_addresses.append((address, timestamp))
 
+    def remove(self, address):
+        self.__timed_addresses = \
+            [item for item in self.__timed_addresses
+             if item[0] != address]
+
+    def is_empty(self):
+        return len(self.__timed_addresses) == 0
+
     def clear(self):
+        self.__lock.acquire()
         self.__timed_addresses.clear()

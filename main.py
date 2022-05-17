@@ -2,10 +2,13 @@ import argparse
 from commands.commands_factory import CommandsFactory
 from client.client import Client
 from services.catalog.catalog_service import CatalogService
+from services.catalog.catalog_publisher import CatalogPublisher
 import threading
 from client.resources import Resources
+from commands.ls import get_all_resources
 from commands.errors import InvalidCommandError, ShutDownSystemError
-from config import VERSION, RESOURCE_GROUP_ID
+from config import VERSION, RESOURCE_GROUP_ID, DEFAULT_RESOURCE_PATH, \
+    CATALOG_PUBLISHER_AWAKE_PERIOD, CATALOG_PUBLISHER_SEND_PERIOD
 
 parser = argparse.ArgumentParser(
     "The program reads the text form file and converts in using" +
@@ -13,6 +16,7 @@ parser = argparse.ArgumentParser(
     "form settings_file")
 
 parser.add_argument("-p", "--path",
+                    default=DEFAULT_RESOURCE_PATH,
                     help="path to resources that uou want to share")
 parser.add_argument("-e", "--expiration",
                     type=int,
@@ -30,13 +34,32 @@ parser.add_argument("-g", "--group",
 
 args = parser.parse_args()
 
+# set up resources and request data
 client = Client(args.delay, VERSION, RESOURCE_GROUP_ID)
-catalog_server = CatalogService()
-catalog_server_thread = threading.Thread(target=catalog_server.run)
+resources = Resources()
+get_all_resources(client, args.path, resources)
+
+# set up catalog service
+catalog_server = CatalogService(resources, args.path)
+catalog_server_thread = threading.Thread(
+    target=catalog_server.run)
 catalog_server_thread.start()
 
-resources = Resources()
+# set up catalog publisher
+catalog_publisher = CatalogPublisher(
+    VERSION,
+    args.path,
+    RESOURCE_GROUP_ID,
+    CATALOG_PUBLISHER_AWAKE_PERIOD,
+    CATALOG_PUBLISHER_SEND_PERIOD)
+catalog_publisher_thread = threading.Thread(
+    target=catalog_publisher.run)
+catalog_publisher_thread.start()
 
+# set up transfer service
+# TO DO:
+
+# command loop
 while True:
     command = input("?:")
 
@@ -55,8 +78,11 @@ while True:
     except ShutDownSystemError:
         break
 
+# free services and publisher
 catalog_server.cancelation_token = True
+catalog_publisher.cancelation_token = True
 print("Turning of services...")
 
 catalog_server_thread.join()
+catalog_publisher_thread.join()
 print("Goodbye")
