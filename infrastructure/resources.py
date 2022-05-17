@@ -1,6 +1,6 @@
 from time import time
 from tabulate import tabulate
-from client.resource import Resource
+from infrastructure.resource import Resource
 from infrastructure.synchronized_decorator import synchronized
 from threading import Lock
 

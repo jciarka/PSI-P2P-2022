@@ -4,7 +4,7 @@ from client.client import Client
 from services.catalog.catalog_service import CatalogService
 from services.catalog.catalog_publisher import CatalogPublisher
 import threading
-from client.resources import Resources
+from infrastructure.resources import Resources
 from commands.ls import get_all_resources
 from commands.errors import InvalidCommandError, ShutDownSystemError
 from config import VERSION, RESOURCE_GROUP_ID, DEFAULT_RESOURCE_PATH, \

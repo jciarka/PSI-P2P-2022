@@ -3,7 +3,7 @@ from os.path import isfile, join, getmtime
 
 from infrastructure.local_resources_util import LocalResourcesUtil
 from config import InjectionContainer
-from client.resource import Resource
+from infrastructure.resource import Resource
 
 
 class UpdateResourcesAction:

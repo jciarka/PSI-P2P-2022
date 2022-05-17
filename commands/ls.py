@@ -1,6 +1,6 @@
 import argparse
-from client.resources import Resources
-from client.resource import Resource
+from infrastructure.resources import Resources
+from infrastructure.resource import Resource
 from os import listdir
 from os.path import isfile, join, getmtime
 from config import DEFAULT_RESOURCE_PATH, LOCAL_RESOURCE_ADDRESS
