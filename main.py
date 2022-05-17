@@ -8,7 +8,8 @@ from infrastructure.resources import Resources
 from commands.ls import get_all_resources
 from commands.errors import InvalidCommandError, ShutDownSystemError
 from config import VERSION, RESOURCE_GROUP_ID, DEFAULT_RESOURCE_PATH, \
-    CATALOG_PUBLISHER_AWAKE_PERIOD, CATALOG_PUBLISHER_SEND_PERIOD
+    CATALOG_PUBLISHER_AWAKE_PERIOD, CATALOG_PUBLISHER_SEND_PERIOD, \
+    CLIENT_DELAY_FOR_RESPONSE
 
 parser = argparse.ArgumentParser(
     "The program reads the text form file and converts in using" +
@@ -20,7 +21,7 @@ parser.add_argument("-p", "--path",
                     help="path to resources that uou want to share")
 parser.add_argument("-d", "--delay",
                     type=int,
-                    default=2,
+                    default=CLIENT_DELAY_FOR_RESPONSE,
                     help="Time in seconds that cilient will wait for serwer answers")
 parser.add_argument("-a", "--awake_period",
                     type=int,
