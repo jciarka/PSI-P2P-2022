@@ -43,7 +43,7 @@ class Ls():
     @staticmethod
     def __getParser():
         parser = argparse.ArgumentParser(
-            "Command LS", description="addes or updates resource")
+            "Command LS", description="lists resources")
 
         parser.add_argument("-l", "--local", action='store_true')
         return parser
