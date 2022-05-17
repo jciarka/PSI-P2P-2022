@@ -1,4 +1,4 @@
-from services.catalog.get_resources_info_action import GetResourceInfoAction
+from services.catalog.client_server_actions import GetResourceInfoAction
 
 
 class ActionsFactory:

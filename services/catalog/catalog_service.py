@@ -3,6 +3,7 @@ import struct
 from zlib import crc32
 from config import \
     VERSION,\
+    RESOURCE_GROUP_ID,\
     CATALOG_SERVICE_PORT,\
     CATALOG_SERVICE_TIMEOUT,\
     DEFAULT_RESOURCE_PATH,\
@@ -10,6 +11,9 @@ from config import \
     RESPONSE_STATUSES
 
 from services.catalog.actions_factory import ActionsFactory
+from infrastructure.catalog_messages_util import CatalogMessagesUtil
+from infrastructure.catalog_messages_errors import \
+    StatusCodeException, CatalogMessageError
 
 
 class CatalogService:
@@ -44,29 +48,56 @@ class CatalogService:
                 except socket.timeout:
                     continue
 
-                _, type, request_ident = struct.unpack('!BBh', msg[0:4])
-                crc = msg[-4:]
+                try:
+                    _, _, type, group_id, msg_id, _ = \
+                        CatalogMessagesUtil.parse_response_header(
+                            msg, VERSION, RESOURCE_GROUP_ID)
 
-                # validate crc
-                if struct.unpack('!L', crc)[0] != crc32(msg[0:-4]):
-                    response = self.__generate_error_response(
-                        request_ident, RESPONSE_STATUSES.REQUEST_DAMMAGED)
+                except StatusCodeException as ex:
+                    response = CatalogMessagesUtil.generate_response(
+                        VERSION, 0, ex.GetStatusCode().value, group_id, msg_id)
                     s.sendto(response, address)
                     continue
 
-                # resolve action class
-                action = ActionsFactory.resolve(type)
-                if action is None:
-                    response = self.__generate_error_response(
-                        request_ident, RESPONSE_STATUSES.BAD_REQUEST)
+                except CatalogMessageError:
+                    # other problems that should not be handled
+                    # like expired message
+                    continue
+
+                except Exception:
+                    response = CatalogMessagesUtil.generate_response(
+                        VERSION, 0, RESPONSE_STATUSES.SERVER_ERROR.value,
+                        group_id, msg_id)
                     s.sendto(response, address)
                     continue
 
                 # execute action
+                action = ActionsFactory.resolve(type)
                 body = action.execute(msg, resource_path=self.resource_path)
-                response = self.__generate_success_response(
-                    request_ident, body)
+                response = CatalogMessagesUtil.generate_response(
+                    VERSION, 0, RESPONSE_STATUSES.SUCCESS.value,
+                    group_id, msg_id, body)
                 s.sendto(response, address)
+
+    def __validate_request(self, msg):
+        version_flags, type, request_ident = \
+            struct.unpack('!BBh', msg[0:4])
+
+        # validate version
+        if (version_flags >> 4) != VERSION:
+            return False, RESPONSE_STATUSES.REQUEST_DAMMAGED
+
+        # validate crc
+        crc = msg[-4:]
+        if struct.unpack('!L', crc)[0] != crc32(msg[0:-4]):
+            return (False, RESPONSE_STATUSES.REQUEST_DAMMAGED)
+
+        # resolve action class
+        action = ActionsFactory.resolve(type)
+        if action is None:
+            return (False, RESPONSE_STATUSES.BAD_REQUEST)
+
+        return True, action
 
     def __generate_error_response(self, request_ident, status_code):
         rows = []

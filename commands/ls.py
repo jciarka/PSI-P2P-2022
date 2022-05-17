@@ -21,7 +21,7 @@ def get_local_resources(resource_path, resources: Resources):
 
 
 def get_remote_resources(client, resources: Resources):
-    results, _ = client.get_resources_info()
+    results, _, _ = client.get_resources_info()
 
     for result in results:
         address = result[0]
@@ -57,7 +57,7 @@ class Ls():
 
         resources.clear()
 
-        get_local_resources(resource_path, resources)
+        # get_local_resources(resource_path, resources)
         if not self.args.local:
             get_remote_resources(client, resources)
 

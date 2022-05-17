@@ -5,6 +5,7 @@ from services.catalog.catalog_service import CatalogService
 import threading
 from client.resources import Resources
 from commands.errors import InvalidCommandError, ShutDownSystemError
+from config import VERSION, RESOURCE_GROUP_ID
 
 parser = argparse.ArgumentParser(
     "The program reads the text form file and converts in using" +
@@ -22,10 +23,14 @@ parser.add_argument("-d", "--delay",
                     type=int,
                     default=2,
                     help="Time in seconds that cilient will wait for serwer answers")
+parser.add_argument("-g", "--group",
+                    type=int,
+                    default=RESOURCE_GROUP_ID,
+                    help="Unique id of group in local network")
 
 args = parser.parse_args()
 
-client = Client(args.delay, args.expiration)
+client = Client(args.delay, VERSION, RESOURCE_GROUP_ID)
 catalog_server = CatalogService()
 catalog_server_thread = threading.Thread(target=catalog_server.run)
 catalog_server_thread.start()
