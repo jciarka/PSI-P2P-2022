@@ -39,13 +39,22 @@ Command ls: error: one of direcotry or file must be provided""")
                 resource_path=LOCAL_RESOURCE_ADDRESS):
         if self.args.file[0]:
             timestamp = 0
+            address = 0
             results, _, _ = client.get_resources_info()
             for result in results:
                 if result[1][0].get('name') == self.args.file[0]:
                     if timestamp < result[1][0].get('modified'):
                         address = result[0]
                         timestamp = result[1][0].get('modified')
-                else:
-                    print("File not found")
-                    return
-        
+            if address == 0:
+                print("File not found")
+                return
+            results, _, _ = client.get_file_from_remote_host(address[0], address[1], self.args.file[0])
+            if not results[0][1]:
+                print("File not fetched")
+                return
+            else:
+                f = open(resource_path + '/' + self.args.file[0], "w")
+                f.write(results[0][1])
+                f.close()
+                

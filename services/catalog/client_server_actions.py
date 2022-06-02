@@ -38,3 +38,13 @@ class GetResourceInfoAction:
 
         serializer = InjectionContainer["serializer"]
         return serializer.serialze(resources)
+
+
+class GetRequestedFile:
+    def __init__(self) -> None:
+        pass
+
+    def execute(self, address, body, resources, resource_path):
+        serializer = InjectionContainer["serializer"]
+        items = serializer.deserialzie(body)
+        return items

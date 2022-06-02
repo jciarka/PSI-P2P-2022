@@ -46,6 +46,28 @@ class Client:
 
             return success_info, send_errors, recieve_errors
 
+    def get_file_from_remote_host(self, address, port, name):
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            self.inc_counter()
+            msg_ident = self.__counter
+            serializer = InjectionContainer["serializer"]
+
+            msg = CatalogMessagesUtil.generate_request(
+                self.__version,
+                0,
+                CATALOG_MESSAGES_TYPES.FILE_REQUEST.value,
+                self.__group_id,
+                self.__counter,
+                name.encode('utf-8'))
+
+            s.sendto(msg, (address, port))
+
+            # gathering responses
+            success_info, send_errors, recieve_errors = \
+                self.__gather_responses_with_body(s, msg_ident, serializer)
+
+            return success_info, send_errors, recieve_errors
+
     def __gather_responses_with_body(self, ready_socket, msg_ident, serializer):
         wait_unitl = time() + self.__delay_time_s
         success_info = []
