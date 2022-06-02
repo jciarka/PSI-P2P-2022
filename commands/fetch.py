@@ -42,7 +42,7 @@ Command ls: error: one of direcotry or file must be provided""")
             address = 0
             results, _, _ = client.get_resources_info()
             for result in results:
-                if result[1][0].get('name') == self.args.file[0]:
+                if len(result[1]) and result[1][0].get('name') == self.args.file[0]:
                     if timestamp < result[1][0].get('modified'):
                         address = result[0]
                         timestamp = result[1][0].get('modified')
