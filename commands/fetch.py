@@ -20,8 +20,7 @@ Command ls: error: one of direcotry or file must be provided""")
     def __getParser():
         parser = argparse.ArgumentParser(
             "Command FETCH", description="downloads resource")
-        parser.add_argument("-f", "--file", nargs='*', type=str)
-        parser.add_argument("-d", "--directory", type=list)
+        parser.add_argument("-f", "--file", nargs='*', type=str, required=True)
 
         return parser
 
