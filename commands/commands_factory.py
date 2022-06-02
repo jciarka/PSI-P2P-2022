@@ -4,11 +4,12 @@ from commands.push import Push
 from commands.rm import Rm
 from commands.exit import Exit
 from commands.help import Help
+from commands.pull import Pull
 from commands.errors import InvalidCommandError
 
 
 registered_commands = [
-    Ls, Fetch, Push, Rm, Exit, Help,
+    Ls, Fetch, Push, Rm, Exit, Help, Pull
 ]
 
 
@@ -37,5 +38,8 @@ class CommandsFactory:
 
         if command == Exit.__name__.lower():
             return Exit(args)
+        
+        if command == Pull.__name__.lower():
+            return Pull(args)
 
         return None
