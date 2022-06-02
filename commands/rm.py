@@ -48,4 +48,3 @@ class Rm:
                 print("The directory does not exist")
         else:
             self.print_usage()
-            

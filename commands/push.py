@@ -1,8 +1,7 @@
 import argparse
 from commands.errors import InvalidCommandError
-from config import DEFAULT_RESOURCE_PATH, LOCAL_RESOURCE_ADDRESS
+from config import DEFAULT_RESOURCE_PATH
 from infrastructure.resources import Resources
-from infrastructure.resource import Resource
 import shutil
 
 
@@ -22,7 +21,6 @@ class Push:
 
         parser.add_argument(
             "-r", "--resource", nargs='*', type=str, required=True)
-
 
         return parser
 
