@@ -1,5 +1,8 @@
 import argparse
+from multiprocessing.connection import Client
 from commands.errors import InvalidCommandError
+from config import LOCAL_RESOURCE_ADDRESS
+from infrastructure.resources import Resources
 
 
 class Fetch:
@@ -11,7 +14,7 @@ class Fetch:
         except SystemExit:
             raise InvalidCommandError()
 
-        if not self.args or (not self.args.file and not self.args.directory):
+        if not self.args or (not self.args.file):
             print("""usage: Command ls [-h] [-f [FILE [FILE ...]]] [-d DIRECTORY]
 Command ls: error: one of direcotry or file must be provided""")
             raise InvalidCommandError
@@ -32,5 +35,17 @@ Command ls: error: one of direcotry or file must be provided""")
         if not self.args:
             print()
 
-    def execute(self, client):
-        raise NotImplementedError()
+    def execute(self, client: Client, resources: Resources,
+                resource_path=LOCAL_RESOURCE_ADDRESS):
+        if self.args.file[0]:
+            timestamp = 0
+            results, _, _ = client.get_resources_info()
+            for result in results:
+                if result[1][0].get('name') == self.args.file[0]:
+                    if timestamp < result[1][0].get('modified'):
+                        address = result[0]
+                        timestamp = result[1][0].get('modified')
+                else:
+                    print("File not found")
+                    return
+        
