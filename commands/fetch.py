@@ -15,8 +15,8 @@ class Fetch:
             raise InvalidCommandError()
 
         if not self.args or (not self.args.file):
-            print("""usage: Command ls [-h] [-f [FILE [FILE ...]]] [-d DIRECTORY]
-Command ls: error: one of direcotry or file must be provided""")
+            print("""usage: Command fetch [-h] [-f [FILE ]]
+Command fetch: error: one of direcotry or file must be provided""")
             raise InvalidCommandError
 
     @staticmethod
@@ -57,4 +57,3 @@ Command ls: error: one of direcotry or file must be provided""")
                 f = open(resource_path + '/' + self.args.file[0], "w")
                 f.write(results[0][1])
                 f.close()
-                
