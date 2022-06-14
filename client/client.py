@@ -11,6 +11,7 @@ from config import \
     RESPONSE_STATUSES,\
     CATALOG_SERVICE_PORT,\
     CATALOG_SERVICE_BUFFER_LENGTH,\
+    DEFAULT_RESOURCE_PATH,\
     InjectionContainer
 
 
@@ -64,7 +65,7 @@ class Client:
 
             # gathering responses
             success_info, send_errors, recieve_errors = \
-                self.__gather_responses_with_body(s, msg_ident, serializer)
+                self.__receive_file(name, s, address, port)
 
             return success_info, send_errors, recieve_errors
 
@@ -99,3 +100,42 @@ class Client:
                 break
 
         return success_info, send_errors, recieve_errors
+
+    def __receive_file(self, s, name, address, port):
+        success_info = []
+        send_errors = []
+        recieve_errors = []
+
+        try:
+
+            s.connect((address, port))
+            s.send("Hello server!")
+            f = open(DEFAULT_RESOURCE_PATH + name, 'rb')
+            print('Sending file ', name)
+            batch = f.read(1024)
+            while (batch):
+                s.send(batch)
+                batch = f.read(1024)
+            f.close()
+            print("File sent")
+            s.shutdown(socket.SHUT_WR)
+            s.close()
+        except:
+            pass
+
+        return success_info, send_errors, recieve_errors
+
+    def __send_file_to_requester(self, s, name, address, port):
+        s.bind((address, port))        # Bind to the port
+        f = open(DEFAULT_RESOURCE_PATH + name, 'wb')
+        s.listen(5)                 # Now wait for client connection.
+        while True:
+            c, addr = s.accept()     # Establish connection with client.
+            print("Receiving file ", name)
+            batch = c.recv(1024)
+            while (batch):
+                f.write(batch)
+                batch = c.recv(1024)
+            f.close()
+            print("File received")
+            c.close()
