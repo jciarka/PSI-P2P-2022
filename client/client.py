@@ -74,17 +74,18 @@ class Client:
                 _, _, status, _, to_read = \
                     CatalogMessagesUtil.parse_file_response_header(
                         data, self.__version, self.__group_id)
-                with open(DEFAULT_RESOURCE_PATH + name, 'wb') as f:
+                with open(DEFAULT_RESOURCE_PATH + '/' + name, 'wb') as f:
                     while to_read >= 1024:
                         body = s.recv(1024)
                         f.write(body)
                         to_read -= 1024
                     body = s.recv(to_read)
                     f.write(body)
-                s.close()
+                return True
+
             except socket.timeout:
                 print("Response not received")
-                
+                return False
 
     def send_file_to_requester(self, args):
         SendFileAction.execute()

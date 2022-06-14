@@ -127,7 +127,7 @@ class CatalogMessagesUtil:
             struct.unpack('!BBH', header[0:4])
 
         body_length = \
-            struct.unpack('!I', header[4:8])
+            struct.unpack('!I', header[4:8])[0]
 
         version = version_flags >> 4
         flags = version_flags & 0b1111
@@ -135,10 +135,6 @@ class CatalogMessagesUtil:
         # validate version
         if checkVersion is not None and version != checkVersion:
             raise VersionNotSupported(checkGroupId, 0)
-
-        body = msg[8:]
-        if body_length != len(body):
-            raise InvalidBodyError(group_id, 0)
 
         return version, flags, response_code, group_id, body_length
 

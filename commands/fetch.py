@@ -49,11 +49,8 @@ Command fetch: error: one of direcotry or file must be provided""")
             if address == 0:
                 print("File not found")
                 return
-            results, _, _ = client.get_file_from_remote_host(address[0], self.args.file[0])
-            if not results[0][1]:
+            success = client.get_file_from_remote_host(address[0], self.args.file[0])
+            if not success:
                 print("File not fetched")
                 return
-            else:
-                f = open(resource_path + '/' + self.args.file[0], "w")
-                f.write(results[0][1])
-                f.close()
+

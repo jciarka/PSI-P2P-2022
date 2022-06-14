@@ -38,7 +38,8 @@ class FileService:
                     connection, address = s.accept()
 
                     send_file_action = SendFileAction(connection, address)
-                    threading.Thread(target=send_file_action.execute)
+                    thread = threading.Thread(target=send_file_action.execute)
+                    thread.run()
                 except socket.timeout:
                     continue
 

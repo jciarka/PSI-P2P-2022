@@ -96,6 +96,7 @@ while True:
         handler.execute(client, resources)
     except ShutDownSystemError:
         break
+    pass
 
 # free services and publisher
 catalog_server.cancelation_token = True
