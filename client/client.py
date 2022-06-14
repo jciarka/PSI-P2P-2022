@@ -7,6 +7,7 @@ from requests import ConnectTimeout
 
 from infrastructure.catalog_messages_util import CatalogMessagesUtil
 from infrastructure.catalog_messages_errors import CatalogMessageError
+from services.transfer.file_service_actions import SendFileAction
 
 from config import \
     CATALOG_MESSAGES_TYPES,\
@@ -85,7 +86,8 @@ class Client:
                 print("Response not received")
                 
 
-    def send_file_to_requester(self,args):
+    def send_file_to_requester(self, args):
+        SendFileAction.execute()
         # accept
         # Rozkodowanie ramki z requestem i znalezienie nazwy pliku
         # W nowym wątku:
