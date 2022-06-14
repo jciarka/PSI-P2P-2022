@@ -174,3 +174,17 @@ class CatalogMessagesUtil:
             raise InvalidBodyError()
 
         return body
+    
+    @staticmethod
+    def parse_file_response_body(msg, checkVersion=None,
+                                 checkGroupId=None, checkMsgId=None):
+
+        _, _, _, _, _, body_len = \
+            CatalogMessagesUtil.__parse_file_response_header(
+                msg, checkVersion, checkGroupId, checkMsgId)
+
+        body = msg[8:-4]
+        if body_len != len(body):
+            raise InvalidBodyError()
+
+        return body

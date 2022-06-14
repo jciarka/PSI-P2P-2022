@@ -49,7 +49,6 @@ class Client:
 
     def get_file_from_remote_host(self, address, port, name):
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-            self.inc_counter()
 
             msg = CatalogMessagesUtil.generate_request(
                 self.__version,
@@ -59,19 +58,23 @@ class Client:
                 self.__counter,
                 name.encode('utf-8'))
 
-            s.sendto(msg, (address, port))  # TCP tutaj koniecznie TUTAJ s.connect
+            s.connect((address, port))
 
-            # Pętla oczekująca na ramkę i zawartość pliku
+            try:
+                s.send(msg)
 
-            #Otrzymanie ramki
-            #Parse ramki i otrzymanie długości
-            #Pobranie danych w pętli i zapis do pliku
+                data, address = s.recv(CATALOG_SERVICE_BUFFER_LENGTH)
 
-            # gathering responses
-            success_info, send_errors, recieve_errors = \
-                self.__receive_file(name, s, address, port)
-
-            return success_info, send_errors, recieve_errors
+                body = \
+                    CatalogMessagesUtil.parse_file_response_body(
+                        data, self.__version, self.__group_id)
+                with open(DEFAULT_RESOURCE_PATH + name, 'wb') as f:
+                    while body:
+                        f.write(body)
+                        body = s.recv(1024)
+                s.close()
+            except:
+                pass
 
     def send_file_to_requester(self,args):
         # accept
