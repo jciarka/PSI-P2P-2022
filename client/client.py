@@ -50,8 +50,6 @@ class Client:
     def get_file_from_remote_host(self, address, port, name):
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
             self.inc_counter()
-            msg_ident = self.__counter
-            serializer = InjectionContainer["serializer"]
 
             msg = CatalogMessagesUtil.generate_request(
                 self.__version,
@@ -61,13 +59,27 @@ class Client:
                 self.__counter,
                 name.encode('utf-8'))
 
-            s.sendto(msg, (address, port))
+            s.sendto(msg, (address, port))  # TCP tutaj koniecznie TUTAJ s.connect
+
+            # Pętla oczekująca na ramkę i zawartość pliku
+
+            #Otrzymanie ramki
+            #Parse ramki i otrzymanie długości
+            #Pobranie danych w pętli i zapis do pliku
 
             # gathering responses
             success_info, send_errors, recieve_errors = \
                 self.__receive_file(name, s, address, port)
 
             return success_info, send_errors, recieve_errors
+
+    def send_file_to_requester(self,args):
+        # accept
+        # Rozkodowanie ramki z requestem i znalezienie nazwy pliku
+        # W nowym wątku:
+        #   Stworzyć ramkę z długością pliku
+        #   send / sendall zawartość pliku
+
 
     def __gather_responses_with_body(self, ready_socket, msg_ident, serializer):
         wait_unitl = time() + self.__delay_time_s
@@ -101,41 +113,3 @@ class Client:
 
         return success_info, send_errors, recieve_errors
 
-    def __receive_file(self, s, name, address, port):
-        success_info = []
-        send_errors = []
-        recieve_errors = []
-
-        try:
-
-            s.connect((address, port))
-            s.send("Hello server!")
-            f = open(DEFAULT_RESOURCE_PATH + name, 'rb')
-            print('Sending file ', name)
-            batch = f.read(1024)
-            while (batch):
-                s.send(batch)
-                batch = f.read(1024)
-            f.close()
-            print("File sent")
-            s.shutdown(socket.SHUT_WR)
-            s.close()
-        except:
-            pass
-
-        return success_info, send_errors, recieve_errors
-
-    def __send_file_to_requester(self, s, name, address, port):
-        s.bind((address, port))        # Bind to the port
-        f = open(DEFAULT_RESOURCE_PATH + name, 'wb')
-        s.listen(5)                 # Now wait for client connection.
-        while True:
-            c, addr = s.accept()     # Establish connection with client.
-            print("Receiving file ", name)
-            batch = c.recv(1024)
-            while (batch):
-                f.write(batch)
-                batch = c.recv(1024)
-            f.close()
-            print("File received")
-            c.close()
