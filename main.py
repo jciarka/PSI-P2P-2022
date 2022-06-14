@@ -3,6 +3,7 @@ from commands.commands_factory import CommandsFactory
 from client.client import Client
 from services.catalog.catalog_service import CatalogService
 from services.catalog.catalog_publisher import CatalogPublisher
+from services.transfer.file_service import FileService
 import threading
 from infrastructure.resources import Resources
 from commands.ls import get_all_resources
@@ -44,7 +45,9 @@ resources = Resources()
 get_all_resources(client, args.path, resources)
 
 # set up catalog service
-catalog_server = CatalogService(resources, args.path)
+catalog_server = CatalogService(
+    resources,
+    args.path)
 
 catalog_server_thread = threading.Thread(
     target=catalog_server.run)
@@ -64,7 +67,15 @@ catalog_publisher_thread = threading.Thread(
 
 catalog_publisher_thread.start()
 
-# TO DO: set up transfer service
+# set up file publisher publisher
+file_publisher = FileService(
+    resources,
+    args.path)
+
+file_publisher_thread = threading.Thread(
+    target=file_publisher.run)
+
+file_publisher_thread.start()
 
 
 # command loop
@@ -89,8 +100,10 @@ while True:
 # free services and publisher
 catalog_server.cancelation_token = True
 catalog_publisher.cancelation_token = True
+file_publisher.cancelation_token = True
 print("Turning off services...")
 
 catalog_server_thread.join()
 catalog_publisher_thread.join()
+file_publisher_thread.join()
 print("Goodbye")
