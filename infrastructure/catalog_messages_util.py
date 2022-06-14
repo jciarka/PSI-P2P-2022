@@ -34,9 +34,34 @@ class CatalogMessagesUtil:
         return b''.join(rows)
 
     @staticmethod
+    def __generate_file_msg(version, flags, type_code, group_id,
+                            msg_id, body=None):
+
+        rows = []
+        rows.append(struct.pack(
+                    '!BBH', (version << 4) + (flags & 0b1111),
+                    type_code,     # still not used
+                    group_id))
+
+        rows.append(struct.pack(
+                    '!I',
+                    len(body) if body is not None else 0))
+
+        if body is not None:
+            rows.append(
+                struct.pack(f'!{len(body)}s', body))
+
+        return b''.join(rows)
+
+    @staticmethod
     def generate_request(version, flags, type, group_id,
                          msg_id, body=None):
         return CatalogMessagesUtil.__generate_msg(
+            version, flags, type, group_id, msg_id, body)
+
+    def generate_file_request(version, flags, type, group_id,
+                              msg_id, body=None):
+        return CatalogMessagesUtil.__generate_file_msg(
             version, flags, type, group_id, msg_id, body)
 
     @staticmethod
@@ -91,35 +116,25 @@ class CatalogMessagesUtil:
             raise MessageLengthInvalidError()
 
         header = msg[0:8]
-        crc = msg[-4:]
 
         version_flags, response_code, group_id = \
             struct.unpack('!BBH', header[0:4])
 
-        msg_id, body_length = \
-            struct.unpack('!HH', header[4:8])
+        body_length = \
+            struct.unpack('!I', header[4:8])
 
         version = version_flags >> 4
         flags = version_flags & 0b1111
 
         # validate version
         if checkVersion is not None and version != checkVersion:
-            raise VersionNotSupported(checkGroupId, msg_id)
+            raise VersionNotSupported(checkGroupId, 0)
 
-        if checkGroupId is not None and group_id != group_id:
-            raise OtherGroupIdError(checkGroupId, msg_id)
-
-        if checkMsgId is not None and checkMsgId != msg_id:
-            raise ExpiredRequestMessageError(group_id, msg_id)
-
-        body = msg[8:-4]
+        body = msg[8:]
         if body_length != len(body):
-            raise InvalidBodyError(group_id, msg_id)
+            raise InvalidBodyError(group_id, 0)
 
-        if struct.unpack('!L', crc)[0] != crc32(header+body):
-            raise CrcCheckFailedError(group_id, msg_id)
-
-        return version, flags, response_code, group_id, msg_id, body_length
+        return version, flags, response_code, group_id, body_length
 
     @staticmethod
     def parse_request_header(msg, checkVersion=None,
@@ -155,11 +170,11 @@ class CatalogMessagesUtil:
     def parse_file_response_header(msg, checkVersion=None,
                                    checkGroupId=None, checkMsgId=None):
 
-        version, flags, type, group_id, msg_id, body_len = \
+        version, flags, code, group_id, body_len = \
             CatalogMessagesUtil.__parse_file_response_header(
                 msg, checkVersion, checkGroupId, checkMsgId)
 
-        return version, flags, type, group_id, msg_id, body_len
+        return version, flags, code, group_id, body_len
 
     @staticmethod
     def parse_body(msg, checkVersion=None,

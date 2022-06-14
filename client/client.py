@@ -3,11 +3,14 @@ from time import time
 import struct
 from zlib import crc32
 
+from requests import ConnectTimeout
+
 from infrastructure.catalog_messages_util import CatalogMessagesUtil
 from infrastructure.catalog_messages_errors import CatalogMessageError
 
 from config import \
     CATALOG_MESSAGES_TYPES,\
+    FILE_SERVICE_TIMEOUT,\
     RESPONSE_STATUSES,\
     CATALOG_SERVICE_PORT,\
     CATALOG_SERVICE_BUFFER_LENGTH,\
@@ -48,33 +51,39 @@ class Client:
             return success_info, send_errors, recieve_errors
 
     def get_file_from_remote_host(self, address, port, name):
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            serializer = InjectionContainer["serializer"]
+            self.inc_counter()
 
-            msg = CatalogMessagesUtil.generate_request(
+            msg = CatalogMessagesUtil.generate_request(   #TODO
                 self.__version,
                 0,
                 CATALOG_MESSAGES_TYPES.FILE_REQUEST.value,
                 self.__group_id,
                 self.__counter,
-                name.encode('utf-8'))
+                serializer.serialze({'filename': name.encode('utf-8')}))
 
             s.connect((address, port))
 
             try:
-                s.send(msg)
+                s.sendall(msg)
+                s.settimeout(FILE_SERVICE_TIMEOUT)
+                data = s.recv(8)
 
-                data, address = s.recv(CATALOG_SERVICE_BUFFER_LENGTH)
-
-                body = \
-                    CatalogMessagesUtil.parse_file_response_body(
+                _, _, status, _, to_read = \
+                    CatalogMessagesUtil.parse_file_response_header(
                         data, self.__version, self.__group_id)
                 with open(DEFAULT_RESOURCE_PATH + name, 'wb') as f:
-                    while body:
-                        f.write(body)
+                    while to_read >= 1024:
                         body = s.recv(1024)
+                        f.write(body)
+                        to_read -= 1024
+                    body = s.recv(to_read)
+                    f.write(body)
                 s.close()
-            except:
-                pass
+            except socket.timeout:
+                print("Response not received")
+                
 
     def send_file_to_requester(self,args):
         # accept
