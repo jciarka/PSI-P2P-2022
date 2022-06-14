@@ -56,7 +56,7 @@ class Client:
             serializer = InjectionContainer["serializer"]
             self.inc_counter()
 
-            msg = CatalogMessagesUtil.generate_request(   #TODO
+            msg = CatalogMessagesUtil.generate_file_request(
                 self.__version,
                 0,
                 CATALOG_MESSAGES_TYPES.FILE_REQUEST.value,
