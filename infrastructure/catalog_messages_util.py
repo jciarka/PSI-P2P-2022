@@ -35,7 +35,7 @@ class CatalogMessagesUtil:
 
     @staticmethod
     def __generate_file_msg(version, flags, type_code, group_id,
-                            msg_id, body=None):
+                            body=None):
 
         rows = []
         rows.append(struct.pack(
@@ -60,9 +60,9 @@ class CatalogMessagesUtil:
             version, flags, type, group_id, msg_id, body)
 
     def generate_file_request(version, flags, type, group_id,
-                              msg_id, body=None):
+                              body=None):
         return CatalogMessagesUtil.__generate_file_msg(
-            version, flags, type, group_id, msg_id, body)
+            version, flags, type, group_id, body)
 
     @staticmethod
     def generate_response(version, flags, code, group_id,
@@ -72,9 +72,9 @@ class CatalogMessagesUtil:
 
     @staticmethod
     def generate_file_response(version, flags, code, group_id,
-                               msg_id, body=None):
+                               body=None):
         return CatalogMessagesUtil.__generate_file_msg(
-            version, flags, code, group_id, msg_id, body)
+            version, flags, code, group_id, body)
 
     @staticmethod
     def __parse_header(msg, checkVersion=None,
