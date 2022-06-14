@@ -12,6 +12,7 @@ from services.transfer.file_service_actions import SendFileAction
 from config import \
     CATALOG_MESSAGES_TYPES,\
     FILE_SERVICE_TIMEOUT,\
+    FILE_TRANSFER_PORT,\
     RESPONSE_STATUSES,\
     CATALOG_SERVICE_PORT,\
     CATALOG_SERVICE_BUFFER_LENGTH,\
@@ -51,7 +52,7 @@ class Client:
 
             return success_info, send_errors, recieve_errors
 
-    def get_file_from_remote_host(self, address, port, name):
+    def get_file_from_remote_host(self, address, name):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             serializer = InjectionContainer["serializer"]
             self.inc_counter()
@@ -61,10 +62,9 @@ class Client:
                 0,
                 CATALOG_MESSAGES_TYPES.FILE_REQUEST.value,
                 self.__group_id,
-                self.__counter,
-                serializer.serialze({'filename': name.encode('utf-8')}))
+                serializer.serialze({'filename': name}))
 
-            s.connect((address, port))
+            s.connect((address, FILE_TRANSFER_PORT))
 
             try:
                 s.sendall(msg)
