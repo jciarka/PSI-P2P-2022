@@ -59,13 +59,22 @@ class Client:
                 self.__counter,
                 name.encode('utf-8'))
 
-            s.sendto(msg, (address, port))  # TCP tutaj koniecznie TUTAJ s.connect
-
+            # s.sendto(msg, (address, port))  # TCP tutaj koniecznie TUTAJ s.connect
+            s.connect((address, port))
             # Pętla oczekująca na ramkę i zawartość pliku
-
-            #Otrzymanie ramki
-            #Parse ramki i otrzymanie długości
-            #Pobranie danych w pętli i zapis do pliku
+            with open('path_to_do/'+name, 'wb') as file_to_write:
+                while True:
+                    data = socket1.recv(1024)
+                    # print data
+                    if not data:
+                        break
+                    # print data
+                    file_to_write.write(data)
+            file_to_write.close()
+            s.close()
+            # Otrzymanie ramki
+            # Parse ramki i otrzymanie długości
+            # Pobranie danych w pętli i zapis do pliku
 
             # gathering responses
             success_info, send_errors, recieve_errors = \
@@ -73,13 +82,12 @@ class Client:
 
             return success_info, send_errors, recieve_errors
 
-    def send_file_to_requester(self,args):
+    def send_file_to_requester(self, args):
         # accept
         # Rozkodowanie ramki z requestem i znalezienie nazwy pliku
         # W nowym wątku:
         #   Stworzyć ramkę z długością pliku
         #   send / sendall zawartość pliku
-
 
     def __gather_responses_with_body(self, ready_socket, msg_ident, serializer):
         wait_unitl = time() + self.__delay_time_s
@@ -112,4 +120,3 @@ class Client:
                 break
 
         return success_info, send_errors, recieve_errors
-
