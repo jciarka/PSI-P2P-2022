@@ -71,6 +71,12 @@ class CatalogMessagesUtil:
             version, flags, code, group_id, msg_id, body)
 
     @staticmethod
+    def generate_file_response(version, flags, code, group_id,
+                               msg_id, body=None):
+        return CatalogMessagesUtil.__generate_file_msg(
+            version, flags, code, group_id, msg_id, body)
+
+    @staticmethod
     def __parse_header(msg, checkVersion=None,
                        checkGroupId=None, checkMsgId=None):
 
