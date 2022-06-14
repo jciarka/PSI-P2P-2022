@@ -118,7 +118,7 @@ class CatalogMessagesUtil:
     def __parse_file_header(msg, checkVersion=None,
                                      checkGroupId=None, checkMsgId=None):
 
-        if len(msg) < 12:
+        if len(msg) < 8:
             raise MessageLengthInvalidError()
 
         header = msg[0:8]
