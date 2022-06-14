@@ -4,7 +4,7 @@ from config import \
     FILE_TRANSFER_PORT,\
     FILE_SERVICE_TIMEOUT
 
-from services.transfer.file_service_actions import SendFileActionAction
+from services.transfer.file_service_actions import SendFileAction
 
 
 class FileService:
@@ -37,7 +37,7 @@ class FileService:
                 try:
                     connection, address = s.accept()
 
-                    send_file_action = SendFileActionAction(connection, address)
+                    send_file_action = SendFileAction(connection, address)
                     threading.Thread(target=send_file_action.execute)
                 except socket.timeout:
                     continue
