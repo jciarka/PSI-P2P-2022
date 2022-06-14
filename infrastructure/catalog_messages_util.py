@@ -84,6 +84,44 @@ class CatalogMessagesUtil:
         return version, flags, type_status, group_id, msg_id, body_length
 
     @staticmethod
+    def __parse_file_response_header(msg, checkVersion=None,
+                                     checkGroupId=None, checkMsgId=None):
+
+        if len(msg) < 12:
+            raise MessageLengthInvalidError()
+
+        header = msg[0:8]
+        crc = msg[-4:]
+
+        version_flags, response_code, group_id = \
+            struct.unpack('!BBH', header[0:4])
+
+        msg_id, body_length = \
+            struct.unpack('!HH', header[4:8])
+
+        version = version_flags >> 4
+        flags = version_flags & 0b1111
+
+        # validate version
+        if checkVersion is not None and version != checkVersion:
+            raise VersionNotSupported(checkGroupId, msg_id)
+
+        if checkGroupId is not None and group_id != group_id:
+            raise OtherGroupIdError(checkGroupId, msg_id)
+
+        if checkMsgId is not None and checkMsgId != msg_id:
+            raise ExpiredRequestMessageError(group_id, msg_id)
+
+        body = msg[8:-4]
+        if body_length != len(body):
+            raise InvalidBodyError(group_id, msg_id)
+
+        if struct.unpack('!L', crc)[0] != crc32(header+body):
+            raise CrcCheckFailedError(group_id, msg_id)
+
+        return version, flags, response_code, group_id, msg_id, body_length
+
+    @staticmethod
     def parse_request_header(msg, checkVersion=None,
                              checkGroupId=None, checkMsgId=None):
 
@@ -99,6 +137,26 @@ class CatalogMessagesUtil:
 
         version, flags, type, group_id, msg_id, body_len = \
             CatalogMessagesUtil.__parse_header(
+                msg, checkVersion, checkGroupId, checkMsgId)
+
+        return version, flags, type, group_id, msg_id, body_len
+
+    @staticmethod
+    def parse_file_request_header(msg, checkVersion=None,
+                                  checkGroupId=None, checkMsgId=None):
+
+        version, flags, response_code, group_id, msg_id, body_len = \
+            CatalogMessagesUtil.__parse_header(
+                msg, checkVersion, checkGroupId, checkMsgId)
+
+        return version, flags, response_code, group_id, msg_id, body_len
+
+    @staticmethod
+    def parse_file_response_header(msg, checkVersion=None,
+                                   checkGroupId=None, checkMsgId=None):
+
+        version, flags, type, group_id, msg_id, body_len = \
+            CatalogMessagesUtil.__parse_file_response_header(
                 msg, checkVersion, checkGroupId, checkMsgId)
 
         return version, flags, type, group_id, msg_id, body_len
