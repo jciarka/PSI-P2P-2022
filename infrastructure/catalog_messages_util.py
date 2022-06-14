@@ -115,7 +115,7 @@ class CatalogMessagesUtil:
         return version, flags, type_status, group_id, msg_id, body_length
 
     @staticmethod
-    def __parse_file_response_header(msg, checkVersion=None,
+    def __parse_file_header(msg, checkVersion=None,
                                      checkGroupId=None, checkMsgId=None):
 
         if len(msg) < 12:
@@ -166,18 +166,18 @@ class CatalogMessagesUtil:
     def parse_file_request_header(msg, checkVersion=None,
                                   checkGroupId=None, checkMsgId=None):
 
-        version, flags, response_code, group_id, msg_id, body_len = \
-            CatalogMessagesUtil.__parse_header(
+        version, flags, _, group_id, body_len = \
+            CatalogMessagesUtil.__parse_file_header(
                 msg, checkVersion, checkGroupId, checkMsgId)
 
-        return version, flags, response_code, group_id, msg_id, body_len
+        return version, flags, group_id, body_len
 
     @staticmethod
     def parse_file_response_header(msg, checkVersion=None,
                                    checkGroupId=None, checkMsgId=None):
 
         version, flags, code, group_id, body_len = \
-            CatalogMessagesUtil.__parse_file_response_header(
+            CatalogMessagesUtil.__parse_file_header(
                 msg, checkVersion, checkGroupId, checkMsgId)
 
         return version, flags, code, group_id, body_len
@@ -201,7 +201,7 @@ class CatalogMessagesUtil:
                                  checkGroupId=None, checkMsgId=None):
 
         _, _, _, _, _, body_len = \
-            CatalogMessagesUtil.__parse_file_response_header(
+            CatalogMessagesUtil.__parse_file_header(
                 msg, checkVersion, checkGroupId, checkMsgId)
 
         body = msg[8:-4]
